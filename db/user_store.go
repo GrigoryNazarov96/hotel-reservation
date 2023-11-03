@@ -12,9 +12,13 @@ import (
 const userColl string = "users"
 
 type UserStore interface {
+	Dropper
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	CreateUser(context.Context, *types.User) (*types.User, error)
+	DeleteUser(context.Context, string) error
+	UpdateUser(context.Context, string, types.UpdateUserDTO) (*types.User, error)
+	Drop(context.Context) error
 }
 
 type MongoUserStore struct {
@@ -25,7 +29,7 @@ type MongoUserStore struct {
 func NewMongoUserStore(c *mongo.Client) *MongoUserStore {
 	return &MongoUserStore{
 		client: c,
-		coll:   c.Database(DBNAME).Collection(userColl),
+		coll:   c.Database(DB_NAME).Collection(userColl),
 	}
 }
 
@@ -54,10 +58,44 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 }
 
 func (s *MongoUserStore) CreateUser(ctx context.Context, user *types.User) (*types.User, error) {
-	res, err := s.coll.InsertOne(ctx, user)
+	cur, err := s.coll.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
-	user.Id = res.InsertedID.(primitive.ObjectID)
+	user.Id = cur.InsertedID.(primitive.ObjectID)
 	return user, nil
+}
+
+func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.DeleteOne(ctx, bson.M{"_id": oid})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, dto types.UpdateUserDTO) (*types.User, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	u_query := bson.D{
+		{Key: "$set", Value: dto.ToBSONM()},
+	}
+	_, err = s.coll.UpdateByID(ctx, oid, u_query)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (s *MongoUserStore) Drop(ctx context.Context) error {
+	if err := s.coll.Drop(ctx); err != nil {
+		return err
+	}
+	return nil
 }

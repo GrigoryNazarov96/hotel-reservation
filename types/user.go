@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,6 +23,22 @@ type CreateUserDTO struct {
 	Pwd       string `json:"password"`
 }
 
+type UpdateUserDTO struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+func (d UpdateUserDTO) ToBSONM() bson.M {
+	m := bson.M{}
+	if len(d.FirstName) > 0 {
+		m["firstname"] = d.FirstName
+	}
+	if len(d.LastName) > 0 {
+		m["lastname"] = d.LastName
+	}
+	return m
+}
+
 type User struct {
 	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	FirstName string             `bson:"firstname" json:"firstname"`
@@ -30,19 +47,19 @@ type User struct {
 	EncPwd    string             `bson:"encpwd" json:"-"`
 }
 
-func (dto CreateUserDTO) Validate() []string {
-	errors := []string{}
+func (dto CreateUserDTO) Validate() map[string]string {
+	errors := map[string]string{}
 	if len(dto.FirstName) < minFirstNameLength {
-		errors = append(errors, fmt.Sprintf("first name should be at least %d characters", minFirstNameLength))
+		errors["firstname"] = fmt.Sprintf("first name should be at least %d characters", minFirstNameLength)
 	}
 	if len(dto.LastName) < minLastNameLength {
-		errors = append(errors, fmt.Sprintf("last name should be at least %d characters", minLastNameLength))
+		errors["lastname"] = fmt.Sprintf("last name should be at least %d characters", minLastNameLength)
 	}
 	if len(dto.Pwd) < minPwdLength {
-		errors = append(errors, fmt.Sprintf("password should be at least %d characters", minPwdLength))
+		errors["pwd"] = fmt.Sprintf("password should be at least %d characters", minPwdLength)
 	}
 	if !isEmailValid(dto.Email) {
-		errors = append(errors, fmt.Sprintf("email isn't valid"))
+		errors["email"] = "email isn't valid"
 	}
 	return errors
 }

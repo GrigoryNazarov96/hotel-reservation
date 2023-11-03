@@ -1,3 +1,13 @@
 package db
 
-const DBNAME = "hotel-reservation"
+import "context"
+
+const (
+	DB_NAME      string = "hotel-reservation"
+	DB_URI       string = "mongodb://localhost:27017"
+	TEST_DB_NAME string = "test_db"
+)
+
+type Dropper interface {
+	Drop(context.Context) error
+}
