@@ -13,6 +13,7 @@ const roomColl string = "rooms"
 
 type RoomStore interface {
 	CreateRoom(context.Context, *types.Room) (*types.Room, error)
+	GetRooms(context.Context, bson.M) ([]*types.Room, error)
 }
 
 type MongoRoomStore struct {
@@ -22,10 +23,10 @@ type MongoRoomStore struct {
 	HotelStore
 }
 
-func NewMongoRoomStore(client *mongo.Client, hotelStore HotelStore) *MongoRoomStore {
+func NewMongoRoomStore(client *mongo.Client, hotelStore HotelStore, dbname string) *MongoRoomStore {
 	return &MongoRoomStore{
 		client:     client,
-		coll:       client.Database(DB_NAME).Collection(roomColl),
+		coll:       client.Database(dbname).Collection(roomColl),
 		HotelStore: hotelStore,
 	}
 }
@@ -41,4 +42,16 @@ func (s *MongoRoomStore) CreateRoom(ctx context.Context, room *types.Room) (*typ
 		return nil, err
 	}
 	return room, nil
+}
+
+func (s *MongoRoomStore) GetRooms(ctx context.Context, filter bson.M) ([]*types.Room, error) {
+	cur, err := s.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var rooms []*types.Room
+	if err := cur.All(ctx, &rooms); err != nil {
+		return []*types.Room{}, err
+	}
+	return rooms, err
 }

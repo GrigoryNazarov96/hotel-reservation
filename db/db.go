@@ -8,6 +8,11 @@ const (
 	TEST_DB_NAME string = "test_db"
 )
 
+type Store struct {
+	User  UserStore
+	Hotel HotelStore
+	Room  RoomStore
+}
 type Dropper interface {
 	Drop(context.Context) error
 }

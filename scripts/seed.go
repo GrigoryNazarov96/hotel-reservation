@@ -69,6 +69,6 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	hotelStore = db.NewMongoHotelStore(client)
-	roomStore = db.NewMongoRoomStore(client, hotelStore)
+	hotelStore = db.NewMongoHotelStore(client, db.DB_NAME)
+	roomStore = db.NewMongoRoomStore(client, hotelStore, db.DB_NAME)
 }

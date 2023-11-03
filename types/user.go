@@ -28,6 +28,11 @@ type UpdateUserDTO struct {
 	LastName  string `json:"lastName"`
 }
 
+type LoginDTO struct {
+	Email string `json:"email"`
+	Pwd   string `json:"password"`
+}
+
 func (d UpdateUserDTO) ToBSONM() bson.M {
 	m := bson.M{}
 	if len(d.FirstName) > 0 {

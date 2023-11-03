@@ -29,17 +29,23 @@ func main() {
 	}
 
 	//stores init
-	userStore := db.NewMongoUserStore(client)
-	hotelStore := db.NewMongoHotelStore(client)
-	roomStore := db.NewMongoRoomStore(client, hotelStore)
+	userStore := db.NewMongoUserStore(client, db.DB_NAME)
+	hotelStore := db.NewMongoHotelStore(client, db.DB_NAME)
+	roomStore := db.NewMongoRoomStore(client, hotelStore, db.DB_NAME)
+	store := &db.Store{
+		User:  userStore,
+		Hotel: hotelStore,
+		Room:  roomStore,
+	}
 
 	//handlers init
-	userHandler := api.NewUserHandler(userStore)
-	hotelHandler := api.NewHotelHandler(hotelStore, roomStore)
+	userHandler := api.NewUserHandler(store)
+	hotelHandler := api.NewHotelHandler(store)
+	authHandler := api.NewAuthHandler(store)
 
 	//app init
 	app := fiber.New(config)
-	apiv1 := app.Group("/api/v1")
+	apiv1 := app.Group("/api/v1" /*middleware.JWTAuth*/)
 
 	//users
 	apiv1.Get("/user", userHandler.HandleGetUsers)
@@ -48,9 +54,13 @@ func main() {
 	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	apiv1.Patch("/user/:id", userHandler.HandleUpdateUser)
 
+	//auth
+	apiv1.Post("/login", authHandler.HandleLogin)
+
 	//hotels
-	apiv1.Get("/hotels", hotelHandler.HandleGetHotels)
-	apiv1.Get("/hotels/:id", hotelHandler.HandleGetHotel)
+	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
+	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
+	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
 
 	//listener
 	app.Listen(*listenAddr)

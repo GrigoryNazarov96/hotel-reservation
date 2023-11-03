@@ -11,12 +11,12 @@ import (
 )
 
 type UserHandler struct {
-	userStore db.UserStore
+	store *db.Store
 }
 
-func NewUserHandler(userStore db.UserStore) *UserHandler {
+func NewUserHandler(s *db.Store) *UserHandler {
 	return &UserHandler{
-		userStore: userStore,
+		store: s,
 	}
 }
 
@@ -32,7 +32,7 @@ func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	newUser, err := h.userStore.CreateUser(c.Context(), user)
+	newUser, err := h.store.User.CreateUser(c.Context(), user)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 
 func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	id := c.Params("id")
-	u, err := h.userStore.GetUserByID(c.Context(), id)
+	u, err := h.store.User.GetUserByID(c.Context(), id)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return c.JSON(map[string]string{"error": "Not Found"})
@@ -52,7 +52,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
-	u, err := h.userStore.GetUsers(c.Context())
+	u, err := h.store.User.GetUsers(c.Context())
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 
 func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	userID := c.Params("id")
-	if err := h.userStore.DeleteUser(c.Context(), userID); err != nil {
+	if err := h.store.User.DeleteUser(c.Context(), userID); err != nil {
 		return err
 	}
 	return c.JSON(map[string]string{"message": fmt.Sprintf("User %s deleted", userID)})
@@ -75,7 +75,7 @@ func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
 	if err := c.BodyParser(&dto); err != nil {
 		return err
 	}
-	_, err := h.userStore.UpdateUser(c.Context(), userID, dto)
+	_, err := h.store.User.UpdateUser(c.Context(), userID, dto)
 	if err != nil {
 		return err
 	}
