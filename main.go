@@ -43,10 +43,12 @@ func main() {
 	userHandler := api.NewUserHandler(store)
 	hotelHandler := api.NewHotelHandler(store)
 	authHandler := api.NewAuthHandler(store)
-
+	bookingHandler := api.NewBookingHandler(store)
 	//app init
 	app := fiber.New(config)
-	apiv1 := app.Group("/api/v1", middleware.JWTAuth)
+
+	//API grouping
+	apiv1 := app.Group("/api/v1", middleware.JWTAuth(userStore))
 	auth := app.Group("/api/")
 
 	//users
@@ -63,6 +65,9 @@ func main() {
 	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
 	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
 	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
+
+	//bookings
+	apiv1.Post("/room/:id/book", bookingHandler.HandleBookRoom)
 
 	//listener
 	app.Listen(*listenAddr)

@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -31,12 +32,12 @@ func (h *AuthHandler) HandleLogin(c *fiber.Ctx) error {
 	user, err := h.store.User.GetUserByEmail(c.Context(), dto.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fmt.Errorf("invalid credentials")
+			return c.Status(http.StatusBadRequest).JSON(map[string]string{"message": "invalid credentials"})
 		}
 		return err
 	}
 	if !types.IsValidPassword(user.EncPwd, dto.Pwd) {
-		return fmt.Errorf("invalid credentials")
+		return c.Status(http.StatusBadRequest).JSON(map[string]string{"message": "invalid credentials"})
 	}
 	res := types.LoginResponse{
 		User:  user,
