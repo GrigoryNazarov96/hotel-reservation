@@ -33,6 +33,11 @@ type LoginDTO struct {
 	Pwd   string `json:"password"`
 }
 
+type LoginResponse struct {
+	User  *User  `json:"user"`
+	Token string `json:"token"`
+}
+
 func (d UpdateUserDTO) ToBSONM() bson.M {
 	m := bson.M{}
 	if len(d.FirstName) > 0 {
@@ -63,15 +68,19 @@ func (dto CreateUserDTO) Validate() map[string]string {
 	if len(dto.Pwd) < minPwdLength {
 		errors["pwd"] = fmt.Sprintf("password should be at least %d characters", minPwdLength)
 	}
-	if !isEmailValid(dto.Email) {
+	if !isValidEmail(dto.Email) {
 		errors["email"] = "email isn't valid"
 	}
 	return errors
 }
 
-func isEmailValid(e string) bool {
+func isValidEmail(e string) bool {
 	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	return emailRegex.MatchString(e)
+}
+
+func IsValidPassword(pwd, candidate string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(pwd), []byte(candidate)) == nil
 }
 
 func NewUserFromDTO(dto CreateUserDTO) (*User, error) {
