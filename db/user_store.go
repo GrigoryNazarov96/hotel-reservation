@@ -25,6 +25,8 @@ type UserStore interface {
 type MongoUserStore struct {
 	client *mongo.Client
 	coll   *mongo.Collection
+
+	UserStore
 }
 
 func NewMongoUserStore(c *mongo.Client, dbname string) *MongoUserStore {
@@ -92,8 +94,8 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, dto types.Up
 	if err != nil {
 		return nil, err
 	}
-	u_query := bson.D{
-		{Key: "$set", Value: dto.ToBSONM()},
+	u_query := bson.M{
+		"$set": dto.ToBSONM(),
 	}
 	_, err = s.coll.UpdateByID(ctx, oid, u_query)
 	if err != nil {

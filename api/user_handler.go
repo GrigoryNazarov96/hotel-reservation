@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/GrigoryNazarov96/hotel-reservation.git/db"
 	"github.com/GrigoryNazarov96/hotel-reservation.git/types"
@@ -23,7 +24,7 @@ func NewUserHandler(s *db.Store) *UserHandler {
 func (h *UserHandler) HandleCreateUser(c *fiber.Ctx) error {
 	var dto types.CreateUserDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return err
+		return NewError(http.StatusBadRequest, err.Error())
 	}
 	if errors := dto.Validate(); len(errors) > 0 {
 		return c.JSON(errors)
@@ -44,7 +45,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	u, err := h.store.User.GetUserByID(c.Context(), id)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return c.JSON(map[string]string{"error": "Not Found"})
+			return NewError(http.StatusNotFound, "resource not found")
 		}
 		return err
 	}
@@ -54,7 +55,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 	u, err := h.store.User.GetUsers(c.Context())
 	if err != nil {
-		return err
+		return NewError(http.StatusNotFound, "resource not found")
 	}
 	return c.JSON(u)
 }

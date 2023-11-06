@@ -16,11 +16,20 @@ const (
 	minPwdLength       int = 8
 )
 
+type User struct {
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	FirstName string             `bson:"firstname" json:"firstname"`
+	LastName  string             `bson:"lastname" json:"lastname"`
+	Email     string             `bson:"email" json:"email"`
+	EncPwd    string             `bson:"encpwd" json:"-"`
+	IsAdmin   bool               `bson:"isAdmin" json:"isAdmin"`
+}
 type CreateUserDTO struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Pwd       string `json:"password"`
+	IsAdmin   bool   `json:"isAdmin"`
 }
 
 type UpdateUserDTO struct {
@@ -47,14 +56,6 @@ func (d UpdateUserDTO) ToBSONM() bson.M {
 		m["lastname"] = d.LastName
 	}
 	return m
-}
-
-type User struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	FirstName string             `bson:"firstname" json:"firstname"`
-	LastName  string             `bson:"lastname" json:"lastname"`
-	Email     string             `bson:"email" json:"email"`
-	EncPwd    string             `bson:"encpwd" json:"-"`
 }
 
 func (dto CreateUserDTO) Validate() map[string]string {

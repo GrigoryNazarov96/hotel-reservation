@@ -27,17 +27,17 @@ func NewAuthHandler(s *db.Store) *AuthHandler {
 func (h *AuthHandler) HandleLogin(c *fiber.Ctx) error {
 	var dto types.LoginDTO
 	if err := c.BodyParser(&dto); err != nil {
-		return nil
+		return err
 	}
 	user, err := h.store.User.GetUserByEmail(c.Context(), dto.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return c.Status(http.StatusBadRequest).JSON(map[string]string{"message": "invalid credentials"})
+			return NewError(http.StatusBadRequest, "invalid credentials")
 		}
 		return err
 	}
 	if !types.IsValidPassword(user.EncPwd, dto.Pwd) {
-		return c.Status(http.StatusBadRequest).JSON(map[string]string{"message": "invalid credentials"})
+		return NewError(http.StatusBadRequest, "invalid credentials")
 	}
 	res := types.LoginResponse{
 		User:  user,

@@ -9,9 +9,10 @@ const (
 )
 
 type Store struct {
-	User  UserStore
-	Hotel HotelStore
-	Room  RoomStore
+	User    UserStore
+	Hotel   HotelStore
+	Room    RoomStore
+	Booking BookingStore
 }
 type Dropper interface {
 	Drop(context.Context) error

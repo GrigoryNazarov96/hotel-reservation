@@ -14,13 +14,15 @@ const hotelColl string = "hotels"
 type HotelStore interface {
 	CreateHotel(context.Context, *types.Hotel) (*types.Hotel, error)
 	UpdateHotel(context.Context, primitive.ObjectID, bson.M) error
-	GetHotels(context.Context) ([]*types.Hotel, error)
+	GetHotels(context.Context, bson.M) ([]*types.Hotel, error)
 	GetHotelByID(context.Context, string) (*types.Hotel, error)
 }
 
 type MongoHotelStore struct {
 	client *mongo.Client
 	coll   *mongo.Collection
+
+	HotelStore
 }
 
 func NewMongoHotelStore(client *mongo.Client, dbname string) *MongoHotelStore {
@@ -30,9 +32,9 @@ func NewMongoHotelStore(client *mongo.Client, dbname string) *MongoHotelStore {
 	}
 }
 
-func (s *MongoHotelStore) GetHotels(ctx context.Context) ([]*types.Hotel, error) {
+func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error) {
 	var hotels []*types.Hotel
-	cur, err := s.coll.Find(ctx, bson.M{})
+	cur, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
