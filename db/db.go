@@ -1,12 +1,24 @@
 package db
 
-import "context"
+import (
+	"context"
+	"log"
+	"os"
 
-const (
-	DB_NAME      string = "hotel-reservation"
-	DB_URI       string = "mongodb://localhost:27017"
-	TEST_DB_NAME string = "test_db"
+	"github.com/joho/godotenv"
 )
+
+func Init() (string, string, string) {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+	var (
+		TEST_DB_NAME string = os.Getenv("TEST_DB_NAME")
+		DB_NAME      string = os.Getenv("DB_NAME")
+		DB_URI       string = os.Getenv("DB_URI")
+	)
+	return TEST_DB_NAME, DB_NAME, DB_URI
+}
 
 type Store struct {
 	User    UserStore

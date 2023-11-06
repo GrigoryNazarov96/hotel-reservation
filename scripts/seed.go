@@ -64,11 +64,12 @@ func main() {
 }
 
 func init() {
+	_, DB_NAME, DB_URI := db.Init()
 	var err error
-	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(db.DB_URI))
+	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(DB_URI))
 	if err != nil {
 		log.Fatal(err)
 	}
-	hotelStore = db.NewMongoHotelStore(client, db.DB_NAME)
-	roomStore = db.NewMongoRoomStore(client, hotelStore, db.DB_NAME)
+	hotelStore = db.NewMongoHotelStore(client, DB_NAME)
+	roomStore = db.NewMongoRoomStore(client, hotelStore, DB_NAME)
 }

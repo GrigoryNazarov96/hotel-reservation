@@ -20,13 +20,14 @@ type sample_db struct {
 }
 
 func setup(t *testing.T) *sample_db {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(db.DB_URI))
+	TEST_DB_NAME, _, DB_URI := db.Init()
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(DB_URI))
 	if err != nil {
 		log.Fatal(err)
 	}
 	return &sample_db{
 		store: &db.Store{
-			User: db.NewMongoUserStore(client, db.TEST_DB_NAME),
+			User: db.NewMongoUserStore(client, TEST_DB_NAME),
 		},
 	}
 }
